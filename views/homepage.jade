@@ -1,0 +1,17 @@
+extends layout
+
+block content
+    h1 Home Page
+    ul
+        li
+            a(href="/register") register
+        li
+            a(href="/login") login
+        li
+            a(href="/logout") logout
+
+    hr
+    h2 session
+    ul
+        for item in session
+            li #{item}

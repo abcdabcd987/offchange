@@ -1,0 +1,11 @@
+doctype html5
+html
+    head
+        title= title
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        if (typeof(message) !== 'undefined')
+            ul.topmesg
+                for mesg in message
+                    li= mesg
+        block content

@@ -1,0 +1,14 @@
+extends layout
+
+block content
+    h1 Login
+    form.form-login(method="post", action="/login")
+        div
+            label(for="username") Username
+            input#username(type="text", name="name", value="#{form.name || ''}")
+        div
+            label(for="password") Password
+            input#password(type="password", name="password")
+        hr
+        div
+            input.submit(type="submit", value="Submit")

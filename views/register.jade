@@ -1,0 +1,22 @@
+extends layout
+
+block content
+    h1 Register
+    form.form-register(method="post", action="/register")
+        div
+            label(for="username") Username
+            input#username(type="text", name="name", value="#{form.name || ''}")
+        div
+            label(for="password") Password
+            input#password(type="password", name="password")
+        hr
+        h2 optional
+        div
+            label(for="wechat") WeChat
+            input#wechat(type="text", name="wechat", value="#{form.wechat || ''}")
+        div
+            label(for="phone") Phone
+            input#phone(type="text", name="phone", value="#{form.phone || ''}")
+        hr
+        div
+            input.submit(type="submit", value="Submit")
