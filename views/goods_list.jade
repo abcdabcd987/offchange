@@ -1,0 +1,33 @@
+extends layout
+
+block content
+    h1 Goods List
+    ul
+        li
+            a(href='/goods?user=#{condition.user}') All
+        li
+            a(href='/goods?status=published&user=#{condition.user}') Published
+        li
+            a(href='/goods?status=finished&user=#{condition.user}') Finished
+    table.table-goods
+        thead
+            tr
+                td title
+                td user
+                td date
+                td action
+        tbody
+            for goods in goodsList
+                tr
+                    td
+                        a(href="/goods/#{goods.id}") !{goods.title}
+                    td !{goods.user}
+                    td !{goods.postDate}
+                    td
+                        if (isLogin && goods.user === username) || privilege === 'administrator'
+                            a(href="/goods/#{goods.id}/delete") x
+    .pagenav
+        if (page != 1)
+            a(href='/goods?page=#{page-1}&status=#{condition.status}&user=#{condition.user}') &lt;&lt;Newer
+        if (page < totpage)
+            a(href='/goods?page=#{page+1}&status=#{condition.status}&user=#{condition.user}') Older&gt;&gt;

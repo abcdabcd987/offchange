@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h1 !{goods.title}
+    ul
+        li !{goods.status}
+        li !{goods.user}
+        li !{goods.postDate}
+    .content !{goods.content}
+    ul
+        for tag in goods.tags
+            li !{tag}

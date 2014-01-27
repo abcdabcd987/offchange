@@ -1,4 +1,5 @@
 var user = require('./user');
+var goods = require('./goods');
 var homepage = require('./homepage');
 
 exports.setup = function(app) {
@@ -10,10 +11,11 @@ exports.setup = function(app) {
     app.get( '/register', user.showRegister);
     app.post('/register', user.execRegister);
 
-    //app.get( '/goods', goods.showList);
-    //app.post('/goods', goods.execNew);
-    //app.get( '/goods/:goods', goods.show);
-    //app.post('/goods/:goods', goods.execUpdate);
+    app.get( '/goods', goods.showList);
+    app.get( '/goods/new', goods.showNew);
+    app.post('/goods/new', goods.execNew);
+    app.get( '/goods/:id', goods.show);
+    //app.post('/goods/:id', goods.execUpdate);
 
     //app.get( '/tags', tag.showList);
     //app.get( '/tag/:tag', tag.show);

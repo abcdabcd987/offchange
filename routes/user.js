@@ -1,19 +1,22 @@
 var settings = require('../settings');
+var utility = require('./utility');
 var User = require('../models/user');
 
 var setSessionLogin = function(req, username, privilege) {
-    req.session.login = true;
+    req.session.isLogin = true;
     req.session.username = username;
     req.session.privilege = privilege;
 }
 
 exports.showRegister = function(req, res) {
-    if (req.session.login) res.redirect('/');
-    res.render('register', { form: {} });
+    if (req.session.isLogin) res.redirect('/');
+    var info = utility.prepareRenderMessage(req);
+    info.form = {};
+    res.render('register', info);
 };
 
 exports.execRegister = function(req, res) {
-    if (req.session.login) res.redirect('/');
+    if (req.session.isLogin) res.redirect('/');
     res.locals.message = res.locals.message || [];
     var info = {
         name: req.body.name,
@@ -27,7 +30,9 @@ exports.execRegister = function(req, res) {
         errors.forEach(function(err) {
             res.locals.message.push(err);
         });
-        return res.render('register', { form: req.body });
+        var info = utility.prepareRenderMessage(req);
+        info.form = req.body;
+        return res.render('register', info);
     }
 
     var item = new User(info);
@@ -39,12 +44,14 @@ exports.execRegister = function(req, res) {
 };
 
 exports.showLogin = function(req, res) {
-    if (req.session.login) res.redirect('/');
-    res.render('login', { form: {} });
+    if (req.session.isLogin) res.redirect('/');
+    var info = utility.prepareRenderMessage(req);
+    info.form = {};
+    res.render('login', info);
 };
 
 exports.execLogin = function(req, res) {
-    if (req.session.login) res.redirect('/');
+    if (req.session.isLogin) res.redirect('/');
     res.locals.message = res.locals.message || [];
     var name = req.body.name;
     var password = settings.hashPassword(req.body.password);
@@ -52,7 +59,9 @@ exports.execLogin = function(req, res) {
         errors.forEach(function(err) {
             res.locals.message.push(err);
         });
-        return res.render('login', { form: req.body });
+       var info = utility.prepareRenderMessage(req);
+       info.form = req.body;
+        return res.render('login', info);
     }
 
     User.findOne({name: name}, function(err, found) {
@@ -64,7 +73,7 @@ exports.execLogin = function(req, res) {
 };
 
 exports.execLogout = function(req, res) {
-    req.session.login = false;
+    req.session.isLogin = false;
     req.session.username = "";
     req.session.privilege = "visitor";
     res.redirect('/');

@@ -1,9 +1,10 @@
 doctype html5
 html
     head
-        title= title
+        title #{title ? title + ' - ' : ''}OffChange
         link(rel='stylesheet', href='/stylesheets/style.css')
     body
+        .nav hello <strong>!{username}</strong>
         if (typeof(message) !== 'undefined')
             ul.topmesg
                 for mesg in message
