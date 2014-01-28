@@ -1,0 +1,42 @@
+<% include head %>
+
+<%
+var color = goods.status === 'finished' ? 'danger' : 'success';
+var status = goods.status === 'finished' ? 'SOLD' : 'SELLING';
+%>
+<div class="panel panel-<%= color %>">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-xs-12"><h3><span class="label label-<%= color %>"><%= status %></span>&nbsp;<%= goods.title %></h3></div>
+        </div>
+        <div class="row">
+            <div class="col-xs-2"><strong>Date</strong></div>
+            <div class="col-xs-10"><date><%=: goods.postDate | formatDate %></date></div>
+        </div>
+        <div class="row">
+            <div class="col-xs-2"><strong>User</strong></div>
+            <div class="col-xs-10"><em><%= goods.user %></em></div>
+        </div>
+        <% if (username === goods.user || privilege === 'administrator') { %>
+        <div class="row">
+            <div class="col-xs-12"><a href="/goods/<%= goods.id %>/modify" class="btn btn-warning"><i class="glyphicon glyphicon-edit"></i> Modify</a></div>
+        </div>
+        <% } %>
+    </div>
+    <div class="panel-body">
+        <pre><%= goods.content %></pre>
+        <div class="goods-images"><% for (var i = 0; i < goods.images.length; ++i) { %>
+            <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="/<%= settings.upload %>/<%= goods.images[i].path %>"></a>
+        <% } %></div>
+    </div>
+    <div class="panel-footer">
+        <div class="row">
+            <div class="col-xs-2">Tags</div>
+            <div class="col-xs-10"><% for (var i = 0; i < goods.tags.length; ++i) { %>
+                <a href="/goods?tags=<%= goods.tags[i] %>"><span class="label label-default"><%= goods.tags[i] %></span></a>
+            <% } %></div>
+        </div>
+    </div>
+</div>
+
+<% include foot %>

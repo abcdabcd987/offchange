@@ -38,7 +38,7 @@ exports.execRegister = function(req, res) {
     var item = new User(info);
     item.save(function(err) {
         if (err) return fallback(['Username used']);
-        setSessionLogin(req, name, item.privilege);
+        setSessionLogin(req, info.name, item.privilege);
         res.redirect('/');
     })
 };
@@ -61,6 +61,7 @@ exports.execLogin = function(req, res) {
         });
        var info = utility.prepareRenderMessage(req);
        info.form = req.body;
+       console.log(info);
         return res.render('login', info);
     }
 

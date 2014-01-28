@@ -1,0 +1,10 @@
+<% include head %>
+
+<form class="form-signin" role="form" action="/login" method="post">
+        <h2 class="form-signin-heading">Welcome Back</h2>
+        <input type="text" class="form-control" placeholder="Username" required autofocus value="<%= typeof(form.name) === 'undefined' ? '' : form.name %>" name="name">
+        <input type="password" class="form-control" placeholder="Password" required name="password">
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+</form>
+
+<% include foot %>

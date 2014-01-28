@@ -6,15 +6,24 @@
 var express = require('express');
 var routes = require('./routes');
 var settings = require('./settings');
+var ejs = require('ejs');
 var http = require('http');
 var path = require('path');
+var moment = require('moment');
 
 var app = express();
+
+ejs.filters.or = function(arg, sub) {
+    return arg || sub;
+}
+ejs.filters.formatDate = function(str) {
+    return moment(str).format('YYYY-MM-DD hh:mm:ss');
+}
 
 // all environments
 app.set('port', process.env.PORT || settings.defaultPort);
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.json());
@@ -22,8 +31,8 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser(settings.secret));
 app.use(express.session());
+app.use(express.bodyParser());
 app.use(app.router);
-app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
@@ -34,5 +43,5 @@ if ('development' == app.get('env')) {
 routes.setup(app);
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+  console.log('[OffChange] server listening on port ' + app.get('port'));
 });

@@ -1,9 +1,36 @@
+var fs = require('fs');
+var path = require('path');
 var settings = require('../settings');
 var utility = require('./utility');
 var Goods = require('../models/goods');
 
+var processUpload = function(files) {
+    var pathList = [];
+    for (var i = 0; i < files.length; ++i) {
+        var type = files[i].type;
+        var size = files[i].size;
+        if ((type != 'image/jpeg' && type != 'image/png') || (!size || size > 10*1024*1024)) {
+            try {
+                fs.unlinkSync(files[i].path);
+            } catch (err) {
+                console.log('cannot remove [%s]', files[i].path);
+            }
+        } else {
+            var str = utility.generateRandomString() + Date.now() + (type == 'image/jpeg' ? '.jpg' : '.png');
+            var newpath = path.join(settings.uploadPath, str);
+            try {
+                fs.renameSync(files[i].path, newpath);
+                pathList.push(str);
+            } catch (err) {
+                console.log('cannot rename [%s] to [%s]', files[i].path, newpath);
+            }
+        }
+    }
+    return pathList;
+}
+
 exports.showNew = function(req, res) {
-    if (!req.session.isLogin) res.redirect('/login');
+    if (!req.session.isLogin) return res.redirect('/login');
     var info = utility.prepareRenderMessage(req);
     info.actionUrl = '/goods/new';
     info.form = {};
@@ -11,21 +38,21 @@ exports.showNew = function(req, res) {
 };
 
 exports.execNew = function(req, res) {
-    if (!req.session.isLogin) res.redirect('/login');
+    if (!req.session.isLogin) return res.redirect('/login');
     res.locals.message = res.locals.message || [];
     var info = {
         title: req.body.title,
         content: req.body.content,
         tags: [],
         user: req.session.username,
-        status: 'published'
+        status: 'published',
+        images: []
     };
     req.body.tags = req.body.tags ? req.body.tags : '';
     req.body.tags.split(',').forEach(function(item) {
         var tag = item.trim();
         if (tag) info.tags.push(tag);
     });
-    console.log(info.tags);
     var fallback = function(errors) {
         errors.forEach(function(err) {
             res.locals.message.push(err);
@@ -36,10 +63,21 @@ exports.execNew = function(req, res) {
         return res.render('goods_new', info);
     };
 
+    if (!info.title || !info.content || !info.tags.length) {
+        return fallback(['No field can be empty']);
+    }
+    var pathList = [];
+    if (typeof(req.files) !== 'undefined' && typeof(req.files.images) !== 'undefined') {
+        pathList = processUpload(req.files.images);
+    }
+    for (var i = 0; i < pathList.length; ++i) {
+        info.images.push({ path: pathList[i] });
+    }
+
     var item = new Goods(info);
     item.save(function(err, saved) {
         if (err) return fallback(['Unknown Error']);
-        res.redirect('/goods/show/' + saved.id);
+        return res.redirect('/goods/' + saved.id);
     });
 };
 
@@ -51,6 +89,8 @@ exports.showList = function(req, res) {
     }
     if (req.query.user)
         condition.user = req.query.user;
+    if (req.query.tags)
+        condition.tags = req.query.tags;
     var fallback = function(err) {
         console.log(err);
         return res.redirect('/');
@@ -63,11 +103,12 @@ exports.showList = function(req, res) {
             if (err) fallback(err);
             var info = utility.prepareRenderMessage(req);
             info.page = page;
-            info.goodsList = goodsList;
+            info.goods = goodsList;
             info.condition = condition;
             info.totpage = Math.ceil(count / settings.perpage);
             if (!info.condition.status) info.condition.status = '';
             if (!info.condition.user) info.condition.user = '';
+            if (!info.condition.tags) info.condition.tags = '';
             return res.render('goods_list', info);
         });
     });
@@ -75,12 +116,79 @@ exports.showList = function(req, res) {
 
 exports.show = function(req, res) {
     var id = req.params.id;
-    console.log(id);
     Goods.findById(id, function(err, doc) {
-        console.log(doc);
         if (err || !doc) return res.redirect('/');
         var info = utility.prepareRenderMessage(req);
         info.goods = doc;
         res.render('goods_show', info);
+    });
+};
+
+exports.showModify = function(req, res) {
+    if (!req.session.isLogin) return res.redirect('/login');
+    var id = req.params.id;
+    Goods.findById(id, function(err, doc) {
+        if (doc.user !== req.session.username && req.session.privilege !== 'administrator')
+            return res.redirect('/goods/' + id);
+        var info = utility.prepareRenderMessage(req);
+        info.goods = doc;
+        info.goods.tags = doc.tags.join(', ');
+        res.render('goods_modify', info);
+    });
+};
+
+exports.execModify = function(req, res) {
+    if (!req.session.isLogin) return res.redirect('/login');
+    var id = req.params.id;
+    Goods.findById(id, function(err, doc) {
+        if (doc.user !== req.session.username && req.session.privilege !== 'administrator')
+            return res.redirect('/goods/' + id);
+        res.locals.message = res.locals.message || [];
+        var info = {
+            title: req.body.title,
+            content: req.body.content,
+            tags: [],
+            user: req.session.username,
+            status: req.body.finished ? 'finished' : 'published',
+            images: []
+        };
+        req.body.tags = req.body.tags ? req.body.tags : '';
+        req.body.tags.split(',').forEach(function(item) {
+            var tag = item.trim();
+            if (tag) info.tags.push(tag);
+        });
+        var fallback = function(errors) {
+            errors.forEach(function(err) {
+                res.locals.message.push(err);
+            });
+            var info2 = utility.prepareRenderMessage(req);
+            info2.actionUrl = '/goods/' + id + '/modify';
+            info2.goods = info;
+            info2.goods.images = doc.images;
+            return res.render('goods_modify', info2);
+        };
+
+        if (!info.title || !info.content || !info.tags.length) {
+            return fallback(['No field can be empty']);
+        }
+
+        console.log(typeof(req.body.delete));
+        for (var i = 0; i < doc.images.length; ++i) {
+            if (typeof(req.body.delete) !== 'object' || req.body.delete[i] !== 'yes') {
+                info.images.push(doc.images[i]);
+            }
+        }
+        var pathList = [];
+        if (typeof(req.files) !== 'undefined' && typeof(req.files.images) !== 'undefined') {
+            pathList = processUpload(req.files.images);
+        }
+        for (var i = 0; i < pathList.length; ++i) {
+            info.images.push({ path: pathList[i] });
+        }
+
+        Goods.findByIdAndUpdate(id, info, null, function(err) {
+            if (err) return fallback(['Unknown Error']);
+            return res.redirect('/goods/' + id);
+        });
     });
 };
