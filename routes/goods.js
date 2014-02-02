@@ -1,4 +1,5 @@
 var fs = require('fs');
+var gm = require('gm');
 var path = require('path');
 var settings = require('../settings');
 var utility = require('./utility');
@@ -16,11 +17,14 @@ var processUpload = function(files) {
                 console.log('cannot remove [%s]', files[i].path);
             }
         } else {
-            var str = utility.generateRandomString() + Date.now() + (type == 'image/jpeg' ? '.jpg' : '.png');
-            var newpath = path.join(settings.uploadPath, str);
+            var str = utility.generateRandomString() + Date.now();
+            var ext = type == 'image/jpeg' ? '.jpg' : '.png';
+            var newpath = path.join(settings.uploadPath, str + ext);
+            var thumb = path.join(settings.uploadPath, 'thumb', str + ext);
             try {
                 fs.renameSync(files[i].path, newpath);
-                pathList.push(str);
+                gm(newpath).resize(500).quality(60).write(thumb, function(err) { });
+                pathList.push(str + ext);
             } catch (err) {
                 console.log('cannot rename [%s] to [%s]', files[i].path, newpath);
             }
@@ -30,7 +34,7 @@ var processUpload = function(files) {
 }
 
 exports.showNew = function(req, res) {
-    if (!req.session.isLogin) return res.redirect('/login');
+    if (!req.session.user.isLogin) return res.redirect('/user/login');
     var info = utility.prepareRenderMessage(req);
     info.actionUrl = '/goods/new';
     info.form = {};
@@ -38,13 +42,13 @@ exports.showNew = function(req, res) {
 };
 
 exports.execNew = function(req, res) {
-    if (!req.session.isLogin) return res.redirect('/login');
+    if (!req.session.user.isLogin) return res.redirect('/user/login');
     res.locals.message = res.locals.message || [];
     var info = {
         title: req.body.title,
         content: req.body.content,
         tags: [],
-        user: req.session.username,
+        user: req.session.user.name,
         status: 'published',
         images: []
     };
@@ -77,7 +81,7 @@ exports.execNew = function(req, res) {
     var item = new Goods(info);
     item.save(function(err, saved) {
         if (err) return fallback(['Unknown Error']);
-        return res.redirect('/goods/' + saved.id);
+        setTimeout(function(){res.redirect('/goods/' + saved.id);}, 100);
     });
 };
 
@@ -91,16 +95,18 @@ exports.showList = function(req, res) {
         condition.user = req.query.user;
     if (req.query.tags)
         condition.tags = req.query.tags;
-    var fallback = function(err) {
-        console.log(err);
+    var fallback = function(errors) {
+        errors.forEach(function(err) {
+            res.locals.message.push(err);
+        });
         return res.redirect('/');
     }
     Goods.find(condition).count(function(err, count) {
-        if (err) return fallback(err);
+        if (err) return fallback(['Database Failure']);
         var page = Number(req.query.page || '1');
         var skip = settings.perpage * (page-1);
         Goods.find(condition).sort('-postDate').skip(skip).limit(settings.perpage).exec(function(err, goodsList) {
-            if (err) fallback(err);
+            if (err) fallback('Database Failure');
             var info = utility.prepareRenderMessage(req);
             info.page = page;
             info.goods = goodsList;
@@ -125,10 +131,10 @@ exports.show = function(req, res) {
 };
 
 exports.showModify = function(req, res) {
-    if (!req.session.isLogin) return res.redirect('/login');
+    if (!req.session.user.isLogin) return res.redirect('/user/login');
     var id = req.params.id;
     Goods.findById(id, function(err, doc) {
-        if (doc.user !== req.session.username && req.session.privilege !== 'administrator')
+        if (doc.user !== req.session.user.name && req.session.user.privilege !== 'administrator')
             return res.redirect('/goods/' + id);
         var info = utility.prepareRenderMessage(req);
         info.goods = doc;
@@ -138,17 +144,17 @@ exports.showModify = function(req, res) {
 };
 
 exports.execModify = function(req, res) {
-    if (!req.session.isLogin) return res.redirect('/login');
+    if (!req.session.user.isLogin) return res.redirect('/user/login');
     var id = req.params.id;
     Goods.findById(id, function(err, doc) {
-        if (doc.user !== req.session.username && req.session.privilege !== 'administrator')
+        if (doc.user !== req.session.user.name && req.session.user.privilege !== 'administrator')
             return res.redirect('/goods/' + id);
         res.locals.message = res.locals.message || [];
         var info = {
             title: req.body.title,
             content: req.body.content,
             tags: [],
-            user: req.session.username,
+            user: doc.user,
             status: req.body.finished ? 'finished' : 'published',
             images: []
         };
@@ -172,7 +178,6 @@ exports.execModify = function(req, res) {
             return fallback(['No field can be empty']);
         }
 
-        console.log(typeof(req.body.delete));
         for (var i = 0; i < doc.images.length; ++i) {
             if (typeof(req.body.delete) !== 'object' || req.body.delete[i] !== 'yes') {
                 info.images.push(doc.images[i]);

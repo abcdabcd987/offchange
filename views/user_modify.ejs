@@ -1,0 +1,44 @@
+<% include head %>
+
+<form class="form-horizontal" role="form" action="/user/modify" method="post">
+  <h2>Modify User</h2>
+  <div class="form-group">
+    <label for="username" class="col-sm-2 control-label">Username</label>
+    <div class="col-sm-10">
+      <p class="form-control-static"><%= user.name %></p>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="old-passwd" class="col-sm-2 control-label">Old Password</label>
+    <div class="col-sm-10">
+      <input type="password" class="form-control" id="old-passwd" placeholder="Old Password" name="oldPassword" autofocus required>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="new-passwd" class="col-sm-2 control-label">New Password</label>
+    <div class="col-sm-10">
+      <input type="password" class="form-control" id="new-passwd" placeholder="New Password" name="newPassword">
+    </div>
+  </div>
+  <hr>
+  <span class="help-block">Optional Information</span>
+  <div class="form-group">
+    <label for="wechat" class="col-sm-2 control-label">WeChat</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="wechat" placeholder="WeChat" name="wechat" value="<%=: form.wechat | or: user.wechat %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="phone" class="col-sm-2 control-label">Phone</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="wechat" placeholder="Mobile Phone Number" name="phone" value="<%=: form.phone | or: user.phone %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-primary">Modify</button>
+    </div>
+  </div>
+</form>
+
+<% include foot %>

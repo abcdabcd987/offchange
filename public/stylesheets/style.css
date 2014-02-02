@@ -37,7 +37,7 @@ body {
   border-top-right-radius: 0;
 }
 
-textarea, input[type="text"] {
+textarea, input[type="text"], input[type="password"] {
   font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
 }
 
@@ -54,4 +54,12 @@ textarea, input[type="text"] {
 
 .nav-pagine {
   margin: 8px;
+}
+
+.footer {
+  padding-top: 19px;
+  padding-left: 15px;
+  padding-right: 15px;
+  color: #777;
+  border-top: 1px solid #e5e5e5;
 }

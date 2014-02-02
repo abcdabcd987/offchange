@@ -10,6 +10,7 @@ var ejs = require('ejs');
 var http = require('http');
 var path = require('path');
 var moment = require('moment');
+var utility = require('./routes/utility');
 
 var app = express();
 
@@ -30,8 +31,12 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser(settings.secret));
-app.use(express.session());
+app.use(express.session(settings.sessionDb));
 app.use(express.bodyParser());
+app.use(function(req, res, next) {
+    utility.initSession(req);
+    next();
+})
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 

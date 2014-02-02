@@ -1,14 +1,27 @@
 <% include head %>
 <div class="page-header">
-  <h1>All Goods <% if (condition.tags) { %><small>of <a href="/goods?status=<%= condition.status %>&amp;user=<%= condition.user %>"><span class="label label-warning"><%= condition.tags %></span></a></small><% } %></h1>
+<%
+var status = 'All';
+switch (condition.status) {
+  case 'finished': status = 'Sold'; break;
+  case 'published': status = 'Selling'; break;
+};
+%>
+  <h1><% if (condition.user) { %>
+    <small><em><%= condition.user %>'s</em></small> 
+  <% } %>
+    <%= status %> Goods <% if (condition.tags) { %><small>of <a href="/goods?status=<%= condition.status %>&amp;user=<%= condition.user %>"><span class="label label-warning"><%= condition.tags %></span></a></small><% } %></h1>
   <div class="nav-pagine">
-  See
-  <div class="btn-group">
-    <a class="btn btn-default" href="/goods?user=<%= condition.user %>&amp;tags=<%= condition.tags %>">All</a>
-    <a class="btn btn-primary" href="/goods?user=<%= condition.user %>&amp;status=published&amp;tags=<%= condition.tags %>">Selling</a>
-    <a class="btn btn-danger" href="/goods?user=<%= condition.user %>&amp;status=finished&amp;tags=<%= condition.tags %>">Sold</a>
+    See
+    <div class="btn-group">
+      <a class="btn btn-default" href="/goods?user=<%= condition.user %>&amp;tags=<%= condition.tags %>">All</a>
+      <a class="btn btn-primary" href="/goods?user=<%= condition.user %>&amp;status=published&amp;tags=<%= condition.tags %>">Selling</a>
+      <a class="btn btn-danger" href="/goods?user=<%= condition.user %>&amp;status=finished&amp;tags=<%= condition.tags %>">Sold</a>
+    </div>
   </div>
-</div>
+  <div>
+    <a href="/goods/new" class="btn btn-lg btn-info"><i class="glyphicon glyphicon-plus"></i> Add a goods</a>
+  </div>
 </div>
 <div class="goods-list">
 <% for (var i = 0; i < goods.length; ++i) { 
@@ -19,7 +32,7 @@
     <div class="col-xs-12 col-sm-6 col-md-3">
       <div class="thumbnail">
         <% if (goods[i].images.length) { %>
-        <img src="/<%= settings.upload %>/<%= goods[i].images[0].path %>" alt="<%= goods[i].title %>">
+        <img src="/<%= settings.upload %>/thumb/<%= goods[i].images[0].path %>" alt="<%= goods[i].title %>">
         <% } %>
         <div class="caption">
           <h3><a href="/goods/<%= goods[i].id %>" title="<%= goods[i].title %>"><%=: goods[i].title | truncate:30 %></a></h3>
@@ -27,13 +40,13 @@
           <p><strong>Tags:</strong><% for (var j = 0; j < goods[i].tags.length; ++j) { %>
              <a href="/goods?tags=<%= goods[i].tags[j] %>"><span class="label label-default"><%= goods[i].tags[j] %></span></a>
           <% } %></p>
-          <p>
+          <p class="btn-group">
           <% if (goods[i].status === 'finished') { %>
             <a href="/goods/<%= goods[i].id %>" class="btn btn-danger" role="button">Sold</a>
           <% } else { %>
             <a href="/goods/<%= goods[i].id %>" class="btn btn-primary" role="button"><i class="glyphicon glyphicon-chevron-right"></i> Selling</a>
           <% } %>
-          <% if (username === goods[i].user || privilege === 'administrator') { %>
+          <% if (user.name === goods[i].user || user.privilege === 'administrator') { %>
             <a href="/goods/<%= goods[i].id %>/modify" class="btn btn-warning"><i class="glyphicon glyphicon-edit"></i> Modify</a>
           <% } %>
           </p>

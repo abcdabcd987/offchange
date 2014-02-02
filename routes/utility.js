@@ -1,11 +1,22 @@
 var settings = require('../settings');
 
+exports.initSession = function(req) {
+    if (req.session.setup) return false;
+    req.session.setup = true;
+    req.session.user = {
+        isLogin: false,
+        name: '',
+        privilege: 'visitor',
+        wechat: '',
+        phone: ''
+    };
+    return true;
+};
+
 exports.prepareRenderMessage = function(req) {
     return {
-        username: req.session.username ? req.session.username : '',
-        privilege: req.session.privilege ? req.session.privilege : 'visitor',
-        isLogin: req.session.isLogin ? req.session.isLogin : false,
-        settings: settings
+        settings: settings,
+        user: req.session.user
     };
 };
 

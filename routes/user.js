@@ -2,56 +2,62 @@ var settings = require('../settings');
 var utility = require('./utility');
 var User = require('../models/user');
 
-var setSessionLogin = function(req, username, privilege) {
-    req.session.isLogin = true;
-    req.session.username = username;
-    req.session.privilege = privilege;
-}
+function setSessionLogin(req, user) {
+    req.session.user = {
+        isLogin: true,
+        name: user.name,
+        privilege: user.privilege,
+        wechat: user.contact.wechat,
+        phone: user.contact.phone
+    };
+};
 
 exports.showRegister = function(req, res) {
-    if (req.session.isLogin) res.redirect('/');
+    if (req.session.user.isLogin) res.redirect('/');
     var info = utility.prepareRenderMessage(req);
-    info.form = {};
-    res.render('register', info);
+    info.form = req.body.form || {};
+    res.render('user_register', info);
 };
 
 exports.execRegister = function(req, res) {
-    if (req.session.isLogin) res.redirect('/');
+    if (req.session.user.isLogin) res.redirect('/');
     res.locals.message = res.locals.message || [];
-    var info = {
-        name: req.body.name,
-        password: settings.hashPassword(req.body.password),
-        contact: {
-            wechat: req.body.wechat,
-            phone: req.body.phone
-        }
-    };
     var fallback = function(errors) {
         errors.forEach(function(err) {
             res.locals.message.push(err);
         });
         var info = utility.prepareRenderMessage(req);
         info.form = req.body;
-        return res.render('register', info);
+        return res.render('user_register', info);
     }
+    if (!req.body.password)
+        return fallback(['Password cannot be empty']);
 
+    var info = {
+        name: req.body.name,
+        password: settings.hashPassword(req.body.password || ''),
+        contact: {
+            wechat: req.body.wechat,
+            phone: req.body.phone
+        }
+    };
     var item = new User(info);
     item.save(function(err) {
         if (err) return fallback(['Username used']);
-        setSessionLogin(req, info.name, item.privilege);
+        setSessionLogin(req, info);
         res.redirect('/');
     })
 };
 
 exports.showLogin = function(req, res) {
-    if (req.session.isLogin) res.redirect('/');
+    if (req.session.user.isLogin) res.redirect('/');
     var info = utility.prepareRenderMessage(req);
-    info.form = {};
-    res.render('login', info);
+    info.form = req.body.form || {};
+    res.render('user_login', info);
 };
 
 exports.execLogin = function(req, res) {
-    if (req.session.isLogin) res.redirect('/');
+    if (req.session.user.isLogin) res.redirect('/');
     res.locals.message = res.locals.message || [];
     var name = req.body.name;
     var password = settings.hashPassword(req.body.password);
@@ -61,21 +67,61 @@ exports.execLogin = function(req, res) {
         });
        var info = utility.prepareRenderMessage(req);
        info.form = req.body;
-       console.log(info);
-        return res.render('login', info);
+        return res.render('user_login', info);
     }
 
     User.findOne({name: name}, function(err, found) {
         if (err || !found || found.password != password)
             return fallback(['Invaild Username or Password']);
-        setSessionLogin(req, name, found.privilege);
+        setSessionLogin(req, found);
         res.redirect('/');
     });
 };
 
 exports.execLogout = function(req, res) {
-    req.session.isLogin = false;
-    req.session.username = "";
-    req.session.privilege = "visitor";
-    res.redirect('/');
+    req.session.destroy(function() {
+        res.redirect('/'); 
+    });
 }
+
+exports.showModify = function(req, res) {
+    if (!req.session.user.isLogin) res.redirect('/');
+    var info = utility.prepareRenderMessage(req);
+    info.form = req.body.form || {};
+    res.render('user_modify', info);
+};
+
+exports.execModify = function(req, res) {
+    if (!req.session.user.isLogin) res.redirect('/');
+    res.locals.message = res.locals.message || [];
+    var oldpasswd = settings.hashPassword(req.body.oldPassword || '');
+    var newpasswd = req.body.newPassword ? settings.hashPassword(req.body.newPassword) : oldpasswd;
+    var info = {
+        password: newpasswd,
+        name: req.session.user.name,
+        privilege: req.session.user.privilege,
+        contact: {
+            wechat: req.body.wechat || req.session.user.wechat,
+            phone: req.body.phone || req.session.user.phone
+        }
+    };
+    var fallback = function(errors) {
+        errors.forEach(function(err) {
+            res.locals.message.push(err);
+        });
+        var info = utility.prepareRenderMessage(req);
+        info.form = req.body;
+        return res.render('user_modify', info);
+    }
+
+    User.findOne({name: req.session.user.name}, function(err, doc) {
+        if (err) return fallback(['Database failure']);
+        if (!doc || doc.password != oldpasswd) return fallback(['Invaild username or password']);
+
+        User.findOneAndUpdate({name: req.session.user.name}, info, function(err) {
+            if (err) return fallback(['Unknown error']);
+            setSessionLogin(req, info);
+            res.redirect('/');
+        });
+    });
+};

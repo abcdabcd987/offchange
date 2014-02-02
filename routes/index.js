@@ -5,11 +5,13 @@ var homepage = require('./homepage');
 exports.setup = function(app) {
     app.get('/', homepage.show);
 
-    app.get( '/login', user.showLogin);
-    app.post('/login', user.execLogin);
-    app.get( '/logout', user.execLogout);
-    app.get( '/register', user.showRegister);
-    app.post('/register', user.execRegister);
+    app.get( '/user/login', user.showLogin);
+    app.post('/user/login', user.execLogin);
+    app.get( '/user/logout', user.execLogout);
+    app.get( '/user/register', user.showRegister);
+    app.post('/user/register', user.execRegister);
+    app.get( '/user/modify', user.showModify);
+    app.post('/user/modify', user.execModify);
 
     app.get( '/goods', goods.showList);
     app.get( '/goods/new', goods.showNew);

@@ -15,9 +15,9 @@ var status = goods.status === 'finished' ? 'SOLD' : 'SELLING';
         </div>
         <div class="row">
             <div class="col-xs-2"><strong>User</strong></div>
-            <div class="col-xs-10"><em><%= goods.user %></em></div>
+            <div class="col-xs-10"><a href="/goods?user=<%= goods.user %>"><em><%= goods.user %></em></a></div>
         </div>
-        <% if (username === goods.user || privilege === 'administrator') { %>
+        <% if (user.name === goods.user || user.privilege === 'administrator') { %>
         <div class="row">
             <div class="col-xs-12"><a href="/goods/<%= goods.id %>/modify" class="btn btn-warning"><i class="glyphicon glyphicon-edit"></i> Modify</a></div>
         </div>
@@ -26,7 +26,7 @@ var status = goods.status === 'finished' ? 'SOLD' : 'SELLING';
     <div class="panel-body">
         <pre><%= goods.content %></pre>
         <div class="goods-images"><% for (var i = 0; i < goods.images.length; ++i) { %>
-            <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="/<%= settings.upload %>/<%= goods.images[i].path %>"></a>
+            <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="/<%= settings.upload %>/thumb/<%= goods.images[i].path %>"></a>
         <% } %></div>
     </div>
     <div class="panel-footer">
