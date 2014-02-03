@@ -19,6 +19,8 @@ exports.setup = function(app) {
     app.get( '/goods/:id', goods.show);
     app.get( '/goods/:id/modify', goods.showModify);
     app.post('/goods/:id/modify', goods.execModify);
+    app.get( '/goods/:id/delete', goods.showDelete);
+    app.post('/goods/:id/delete', goods.execDelete);
 
     //app.get( '/tags', tag.showList);
     //app.get( '/tag/:tag', tag.show);

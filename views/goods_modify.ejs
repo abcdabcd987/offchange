@@ -1,9 +1,10 @@
 <% include head %>
 
 <form role="form" action="/goods/<%= goods.id %>/modify" method="post" enctype="multipart/form-data">
+  <h2>Modify a goods</h2>
   <div class="form-group">
     <label for="title">Title</label>
-    <input type="text" class="form-control" id="title" placeholder="Simple words about the goods" name="title" value="<%= goods.title %>">
+    <input type="text" class="form-control" id="title" placeholder="Simple words about the goods" name="title" value="<%= goods.title %>" required>
   </div>
   <div class="checkbox">
     <label><% if (goods.status === 'published') { %>
@@ -15,7 +16,7 @@
   </div>
   <div class="form-group">
     <label for="content">Description</label>
-    <textarea name="content" id="content" placeholder="Describe the goods in detail." class="form-control" rows="7"><%= goods.content %></textarea>
+    <textarea name="content" id="content" placeholder="Describe the goods in detail." class="form-control" rows="7" required><%= goods.content %></textarea>
   </div>
   <div class="form-group">
     <label>Images</label>
@@ -26,7 +27,7 @@
 <% } %>
       <div class="col-xs-12 col-sm-6 col-md-3 image-to-modify-div">
         <div class="thumbnail">
-          <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="/<%= settings.upload %>/<%= goods.images[i].path %>" alt="image"></a>
+          <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="<%= settings.imageCDN %>/<%= settings.upload %>/<%= goods.images[i].path %>" alt="image"></a>
           <div class="caption">
             <p><button href="#" class="btn btn-danger" role="button">Delete</button>
               <input type="hidden" name="delete[<%= i %>]" value="no"></p>
@@ -41,21 +42,21 @@
   <div class="form-group">
     <label>Upload Image</label>
     <div class="upload-group">
-      <input type="file" class="form-control" name="images[0]">
+    <% var count = fileCount || 1; %>
+    <% for (var i = 0; i < count; ++i) { %>
+      <input type="file" class="form-control" name="images[<%= i %>]">
+    <% } %>
     </div>
     <a class="btn btn-default add-upload">Add an image</a>
   </div>
   <div class="form-group">
     <label for="tags">Tags</label>
-    <input type="text" class="form-control" id="tags" placeholder="Classify the goods, use ',' to split up." name="tags" value="<%= goods.tags %>">
+    <input type="text" class="form-control" id="tags" placeholder="Classify the goods, use ',' to split up." name="tags" value="<%= goods.tags %>" required>
   </div>
   <button type="submit" class="btn btn-primary">Modify</button>
 </form>
 
-<!--foot-->
-</div>
-<script src="//cdnjscn.b0.upaiyun.com/libs/jquery/1.10.0/jquery.min.js"></script>
-<script src="//cdnjscn.b0.upaiyun.com/libs/twitter-bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<% include foot_script %>
 <script>
 var totfiles = 1;
 $(".add-upload").on('click', function(e) {
@@ -85,5 +86,4 @@ $(".image-to-modify-div button").on('click', function(e) {
   return false;
 });
 </script>
-</body>
-</html>
+<% include foot_close %>

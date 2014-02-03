@@ -1,5 +1,6 @@
 body {
-  padding-top: 70px;
+  padding-top: 50px;
+  padding-bottom: 20px;
 }
 
 .form-signin {
@@ -57,9 +58,13 @@ textarea, input[type="text"], input[type="password"] {
 }
 
 .footer {
-  padding-top: 19px;
-  padding-left: 15px;
-  padding-right: 15px;
+  margin-top: 30px;
+  padding: 15px 15px 0 15px;
   color: #777;
   border-top: 1px solid #e5e5e5;
+}
+
+.gray {
+    opacity: 0.4;
+    filter: alpha(opacity=40); /* msie */
 }

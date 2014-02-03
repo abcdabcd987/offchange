@@ -38,6 +38,8 @@ exports.showNew = function(req, res) {
     var info = utility.prepareRenderMessage(req);
     info.actionUrl = '/goods/new';
     info.form = {};
+    info.form.fileCount = 1;
+    info.title = "Add a goods";
     res.render('goods_new', info);
 };
 
@@ -64,6 +66,8 @@ exports.execNew = function(req, res) {
         var info = utility.prepareRenderMessage(req);
         info.actionUrl = '/goods/new';
         info.form = req.body;
+        info.form.fileCount = req.files.images.length || 1;
+        info.title = "Add a goods";
         return res.render('goods_new', info);
     };
 
@@ -81,7 +85,7 @@ exports.execNew = function(req, res) {
     var item = new Goods(info);
     item.save(function(err, saved) {
         if (err) return fallback(['Unknown Error']);
-        setTimeout(function(){res.redirect('/goods/' + saved.id);}, 100);
+        setTimeout(function(){res.redirect('/goods/' + saved.id);}, 1000);
     });
 };
 
@@ -115,6 +119,20 @@ exports.showList = function(req, res) {
             if (!info.condition.status) info.condition.status = '';
             if (!info.condition.user) info.condition.user = '';
             if (!info.condition.tags) info.condition.tags = '';
+
+            info.title = "";
+            if (info.condition.user)
+                info.title = info.condition.user + "'s ";
+            switch (info.condition.status) {
+                case 'published': info.title += 'Selling'; break;
+                case 'finished': info.title += 'Sold'; break;
+                default: info.title += 'All'; break;
+            }
+            info.title += " Goods";
+            if (info.condition.tags)
+                info.title += ' of ' + info.condition.tags;
+            info.title += '  Page ' + page;
+
             return res.render('goods_list', info);
         });
     });
@@ -126,6 +144,7 @@ exports.show = function(req, res) {
         if (err || !doc) return res.redirect('/');
         var info = utility.prepareRenderMessage(req);
         info.goods = doc;
+        info.title = doc.title;
         res.render('goods_show', info);
     });
 };
@@ -139,6 +158,8 @@ exports.showModify = function(req, res) {
         var info = utility.prepareRenderMessage(req);
         info.goods = doc;
         info.goods.tags = doc.tags.join(', ');
+        info.fileCount = 1;
+        info.title = "[Modify]" + doc.title;
         res.render('goods_modify', info);
     });
 };
@@ -171,6 +192,8 @@ exports.execModify = function(req, res) {
             info2.actionUrl = '/goods/' + id + '/modify';
             info2.goods = info;
             info2.goods.images = doc.images;
+            info2.fileCount = req.files.images.length || 1;
+            info2.title = "[Modify]" + doc.title;
             return res.render('goods_modify', info2);
         };
 
@@ -193,7 +216,32 @@ exports.execModify = function(req, res) {
 
         Goods.findByIdAndUpdate(id, info, null, function(err) {
             if (err) return fallback(['Unknown Error']);
-            return res.redirect('/goods/' + id);
+            setTimeout(function(){res.redirect('/goods/' + id);}, 1000);
         });
+    });
+};
+
+exports.showDelete = function(req, res) {
+    var id = req.params.id;
+    Goods.findById(id, function(err, doc) {
+        if (err || !doc) return res.redirect('/');
+        if (req.session.user.privilege != 'administrator' && req.session.user.name != doc.user)
+            return res.redirect('/');
+        var info = utility.prepareRenderMessage(req);
+        info.goods = doc;
+        info.title = "[Delete]" + doc.title;
+        res.render('goods_delete', info);
+    });
+};
+
+exports.execDelete = function(req, res) {
+    var id = req.params.id;
+    Goods.findById(id, function(err, doc) {
+        if (err || !doc) return res.redirect('/');
+        if (req.session.user.privilege != 'administrator' && req.session.user.name != doc.user)
+            return res.redirect('/');
+        Goods.findByIdAndRemove(id, function(err) {
+            return res.redirect('/goods');
+        })
     });
 };

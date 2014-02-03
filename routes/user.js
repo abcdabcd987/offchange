@@ -16,6 +16,7 @@ exports.showRegister = function(req, res) {
     if (req.session.user.isLogin) res.redirect('/');
     var info = utility.prepareRenderMessage(req);
     info.form = req.body.form || {};
+    info.title = "Register";
     res.render('user_register', info);
 };
 
@@ -28,6 +29,7 @@ exports.execRegister = function(req, res) {
         });
         var info = utility.prepareRenderMessage(req);
         info.form = req.body;
+        info.title = "Register";
         return res.render('user_register', info);
     }
     if (!req.body.password)
@@ -53,6 +55,7 @@ exports.showLogin = function(req, res) {
     if (req.session.user.isLogin) res.redirect('/');
     var info = utility.prepareRenderMessage(req);
     info.form = req.body.form || {};
+    info.title = "Login";
     res.render('user_login', info);
 };
 
@@ -65,8 +68,9 @@ exports.execLogin = function(req, res) {
         errors.forEach(function(err) {
             res.locals.message.push(err);
         });
-       var info = utility.prepareRenderMessage(req);
-       info.form = req.body;
+        var info = utility.prepareRenderMessage(req);
+        info.form = req.body;
+        info.title = "Login";
         return res.render('user_login', info);
     }
 
@@ -88,6 +92,7 @@ exports.showModify = function(req, res) {
     if (!req.session.user.isLogin) res.redirect('/');
     var info = utility.prepareRenderMessage(req);
     info.form = req.body.form || {};
+    info.title = "Modify User";
     res.render('user_modify', info);
 };
 
@@ -111,6 +116,7 @@ exports.execModify = function(req, res) {
         });
         var info = utility.prepareRenderMessage(req);
         info.form = req.body;
+        info.title = "Modify User";
         return res.render('user_modify', info);
     }
 

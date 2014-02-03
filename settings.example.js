@@ -4,9 +4,9 @@ var express = require('express');
 var mongoStore = require('connect-mongo')(express);
 
 var dbi = {
-    db: 'offchange'
+    db: 'Your Database Name'
 };
-var cookieSecret = "KSsgEQXJDEmZASk6plm7";
+var cookieSecret = "Your Cookie Secret, Random String";
 module.exports = {
     perpage: 24,
     websiteName: 'OffChange',
@@ -14,14 +14,14 @@ module.exports = {
     upload: "upload",
     imageCDN: "", // such as "http://subdomain.cdn.provider.com"
     secret: cookieSecret,
-    frontSalt: 'your salt',
+    frontSalt: 'Your Salt for Frontend Encryption, Random String',
     databaseInfo: dbi,
     sessionDb: {
         secret: cookieSecret,
         store: new mongoStore(dbi)
     },
     hashPassword: function(password) {
-        return crypto.createHash('sha512').update(password + "RpC9Dv96mHCu7lOVAeUS").digest('hex');
+        return crypto.createHash('sha512').update(password + "Your Salt for Password Storage, Random String").digest('hex');
     }
 };
 

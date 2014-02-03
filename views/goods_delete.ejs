@@ -1,5 +1,17 @@
 <% include head %>
+    </div>
 
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Are you sure to delete it?</h1>
+        <p>There is NO way to undo.</p>
+        <form action="#" method="post">
+        <p><button class="btn btn-danger btn-lg" role="submit"><i class="glyphicon glyphicon-remove"></i> Delete it!</button></p>
+        </form>
+      </div>
+    </div>
+
+<div class="container gray">
 <%
 var color = goods.status === 'finished' ? 'danger' : 'success';
 var status = goods.status === 'finished' ? 'SOLD' : 'SELLING';
@@ -26,7 +38,7 @@ var status = goods.status === 'finished' ? 'SOLD' : 'SELLING';
     <div class="panel-body">
         <pre><%= goods.content %></pre>
         <div class="goods-images"><% for (var i = 0; i < goods.images.length; ++i) { %>
-            <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="<%= settings.imageCDN %>/<%= settings.upload %>/thumb/<%= goods.images[i].path %>"></a>
+            <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="/<%= settings.upload %>/thumb/<%= goods.images[i].path %>"></a>
         <% } %></div>
     </div>
     <div class="panel-footer">

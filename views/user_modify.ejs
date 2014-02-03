@@ -41,4 +41,17 @@
   </div>
 </form>
 
-<% include foot %>
+<% include foot_script %>
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"></script>
+<script>
+$('form').on('submit', function(e) {
+    var passwd = $('input[type="password"]');
+    for (var i = 0; i < passwd.size(); ++i) {
+      var current = passwd.get(i);
+      var tohash = '<%= settings.frontSalt %>' + current.value;
+      current.value = CryptoJS.SHA256(tohash);
+    }
+    return true;
+});
+</script>
+<% include foot_close %>
