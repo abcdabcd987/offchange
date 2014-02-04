@@ -14,7 +14,7 @@ var processUpload = function(files) {
             try {
                 fs.unlinkSync(files[i].path);
             } catch (err) {
-                console.log('cannot remove [%s]', files[i].path);
+                console.error('cannot remove [%s]', files[i].path);
             }
         } else {
             var str = utility.generateRandomString() + Date.now();
@@ -26,7 +26,7 @@ var processUpload = function(files) {
                 gm(newpath).resize(500).quality(60).write(thumb, function(err) { });
                 pathList.push(str + ext);
             } catch (err) {
-                console.log('cannot rename [%s] to [%s]', files[i].path, newpath);
+                console.error('cannot rename [%s] to [%s]', files[i].path, newpath);
             }
         }
     }
@@ -203,7 +203,7 @@ exports.execModify = function(req, res) {
 
         for (var i = 0; i < doc.images.length; ++i) {
             if (typeof(req.body.delete) !== 'object' || req.body.delete[i] !== 'yes') {
-                info.images.push(doc.images[i]);
+                info.images.push({ path: doc.images[i].path });
             }
         }
         var pathList = [];
@@ -214,7 +214,7 @@ exports.execModify = function(req, res) {
             info.images.push({ path: pathList[i] });
         }
 
-        Goods.findByIdAndUpdate(id, info, null, function(err) {
+        Goods.findByIdAndUpdate(id, info, function(err) {
             if (err) return fallback(['Unknown Error']);
             setTimeout(function(){res.redirect('/goods/' + id);}, 1000);
         });

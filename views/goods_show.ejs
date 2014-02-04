@@ -26,7 +26,7 @@ var status = goods.status === 'finished' ? 'SOLD' : 'SELLING';
     <div class="panel-body">
         <pre><%= goods.content %></pre>
         <div class="goods-images"><% for (var i = 0; i < goods.images.length; ++i) { %>
-            <a href="/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="<%= settings.imageCDN %>/<%= settings.upload %>/thumb/<%= goods.images[i].path %>"></a>
+            <a href="<%= settings.imageCDN %>/<%= settings.upload %>/<%= goods.images[i].path %>" target="_blank"><img src="<%= settings.imageCDN %>/<%= settings.upload %>/thumb/<%= goods.images[i].path %>"></a>
         <% } %></div>
     </div>
     <div class="panel-footer">
